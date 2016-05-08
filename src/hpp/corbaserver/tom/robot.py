@@ -16,6 +16,7 @@
 # hpp-tom  If not, see
 # <http://www.gnu.org/licenses/>.
 
+from math import pi
 from hpp.corbaserver.robot import Robot as Parent
 
 ##
@@ -38,7 +39,118 @@ class Robot (Parent):
     urdfName = "tom_full"
     urdfSuffix = ""
     srdfSuffix = ""
+    halfSitting = [0.0, 0.0, 1.0, 0.0, -pi/2, -pi/4, 0, -pi/6, -2*pi/3, -pi/4,
+                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.8295, 0, 0, 0, pi/2,
+                   -3*pi/4, 0, -5*pi/6, 2*pi/3, pi/4, 0, 0, 0, 0, 0, 0, 0, 0,
+                   0, 0, 0, 0, 0.8295, 0, 0, 0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0,
+                   1.0, 0.0]
+    openLeftHand = {
+        'l_hand_joint_index_0' : 0,
+        'l_hand_joint_index_1' : 0,
+        'l_hand_joint_index_2' : 0,
+        'l_hand_joint_index_3' : 0,
+        'l_hand_joint_middle_0' : 0,
+        'l_hand_joint_middle_1' : 0,
+        'l_hand_joint_middle_2' : 0,
+        'l_hand_joint_middle_3' : 0,
+        'l_hand_joint_ring_0' : 0,
+        'l_hand_joint_ring_1' : 0,
+        'l_hand_joint_ring_2' : 0,
+        'l_hand_joint_ring_3' : 0,
+        'l_hand_joint_thumb_0' : 0.8295,
+        'l_hand_joint_thumb_1' : 0,
+        'l_hand_joint_thumb_2' : 0,
+        'l_hand_joint_thumb_3' : 0,
+    }
+    openRightHand = {
+        'r_hand_joint_index_0' : 0,
+        'r_hand_joint_index_1' : 0,
+        'r_hand_joint_index_2' : 0,
+        'r_hand_joint_index_3' : 0,
+        'r_hand_joint_middle_0' : 0,
+        'r_hand_joint_middle_1' : 0,
+        'r_hand_joint_middle_2' : 0,
+        'r_hand_joint_middle_3' : 0,
+        'r_hand_joint_ring_0' : 0,
+        'r_hand_joint_ring_1' : 0,
+        'r_hand_joint_ring_2' : 0,
+        'r_hand_joint_ring_3' : 0,
+        'r_hand_joint_thumb_0' : 0.8295,
+        'r_hand_joint_thumb_1' : 0,
+        'r_hand_joint_thumb_2' : 0,
+        'r_hand_joint_thumb_3' : 0,
+    }
+
+    closedLeftHand = {
+        'l_hand_joint_index_0' : 0.,
+        'l_hand_joint_index_1' : 0.95,
+        'l_hand_joint_index_2' : 0.9558,
+        'l_hand_joint_index_3' : 0.88,
+        'l_hand_joint_middle_0' : 0.,
+        'l_hand_joint_middle_1' : 0.95,
+        'l_hand_joint_middle_2' : 0.9558,
+        'l_hand_joint_middle_3' : 0.88,
+        'l_hand_joint_ring_0' : 0.,
+        'l_hand_joint_ring_1' : 0.95,
+        'l_hand_joint_ring_2' : 0.9558,
+        'l_hand_joint_ring_3' : 0.88,
+        'l_hand_joint_thumb_0' : 1.2,
+        'l_hand_joint_thumb_1' : 0.8,
+        'l_hand_joint_thumb_2' : 0.9108,
+        'l_hand_joint_thumb_3' : 0.75,
+    }
+
+    closedRightHand = {
+        'r_hand_joint_index_0' : 0.,
+        'r_hand_joint_index_1' : 0.95,
+        'r_hand_joint_index_2' : 0.9558,
+        'r_hand_joint_index_3' : 0.88,
+        'r_hand_joint_middle_0' : 0.,
+        'r_hand_joint_middle_1' : 0.95,
+        'r_hand_joint_middle_2' : 0.9558,
+        'r_hand_joint_middle_3' : 0.88,
+        'r_hand_joint_ring_0' : 0.,
+        'r_hand_joint_ring_1' : 0.95,
+        'r_hand_joint_ring_2' : 0.9558,
+        'r_hand_joint_ring_3' : 0.88,
+        'r_hand_joint_thumb_0' : 1.2,
+        'r_hand_joint_thumb_1' : 0.8,
+        'r_hand_joint_thumb_2' : 0.9108,
+        'r_hand_joint_thumb_3' : 0.75,
+    }
 
     def __init__ (self, robotName, load = True):
         Parent.__init__ (self, robotName, self.rootJointType, load)
         self.tf_root = "base_footprint"
+
+    ## Open hand
+    #
+    #  \param q configuration,
+    #  \param which which hand to open, should be "left" or "right".
+    #  \return configuration with hand degrees of freedom modified
+    def openHand (self, q, which) :
+        if which == "left":
+            h = self.openLeftHand
+        elif which == "right":
+            h = self.openRightHand
+        else :
+            raise RuntimeError ("which should be 'left' or 'right'")
+        for j, v in h.iteritems ():
+            q [self.rankInConfiguration [j]] = v
+        return q
+
+    ## Close hand
+    #
+    #  \param q configuration,
+    #  \param which which hand to close, should be "left" or "right".
+    #  \return configuration with hand degrees of freedom modified
+    def closedHand (self, q, which) :
+        if which == "left":
+            h = self.closedLeftHand
+        elif which == "right":
+            h = self.closedRightHand
+        else :
+            raise RuntimeError ("which should be 'left' or 'right'")
+        for j, v in h.iteritems ():
+            q [self.rankInConfiguration [j]] = v
+        return q
