@@ -37,4 +37,9 @@ install (FILES
   src/hpp/corbaserver/tom/__init__.py
   DESTINATION ${PYTHON_SITELIB}/hpp/corbaserver/tom
   )
+install (FILES
+  src/hpp/corbaserver/manipulation/tom/robot.py
+  src/hpp/corbaserver/manipulation/tom/__init__.py
+  DESTINATION ${PYTHON_SITELIB}/hpp/corbaserver/manipulation/tom
+  )
 setup_project_finalize ()

@@ -36,14 +36,25 @@ class Robot (Parent):
     packageName = "tom_description"
     meshPackageName = "tom_description"
     rootJointType = "planar"
-    urdfName = "tom_full"
+    urdfName = "tom_simple"
     urdfSuffix = ""
     srdfSuffix = ""
-    halfSitting = [0.0, 0.0, 1.0, 0.0, -pi/2, -pi/4, 0, -pi/6, -2*pi/3, -pi/4,
-                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.8295, 0, 0, 0, pi/2,
-                   -3*pi/4, 0, -5*pi/6, 2*pi/3, pi/4, 0, 0, 0, 0, 0, 0, 0, 0,
-                   0, 0, 0, 0, 0.8295, 0, 0, 0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0,
-                   1.0, 0.0]
+    halfSittingDict = {
+        'r_shoulder_pan_joint': 1.5708,
+        'r_shoulder_lift_joint': -2.,
+        'r_elbow_joint': -0.5,
+        'r_wrist_1_joint': -2.61799,
+        'r_wrist_2_joint': -1.57,
+        'r_wrist_3_joint': 3.1415,
+        'l_shoulder_pan_joint': -1.5708,
+        'l_shoulder_lift_joint': -1.142,
+        'l_elbow_joint': 0.5,
+        'l_wrist_1_joint': -0.523599,
+        'l_wrist_2_joint': 1.57,
+        'l_wrist_3_joint': -3.1415,
+        'r_hand_joint_thumb_0': 0.8295,
+        'l_hand_joint_thumb_0': 0.8295,
+    }
     openLeftHand = {
         'l_hand_joint_index_0' : 0,
         'l_hand_joint_index_1' : 0,
@@ -122,35 +133,31 @@ class Robot (Parent):
     def __init__ (self, robotName, load = True):
         Parent.__init__ (self, robotName, self.rootJointType, load)
         self.tf_root = "base_footprint"
+        self.halfSitting = self.getCurrentConfig ()
+        for j, v in self.halfSittingDict.iteritems ():
+            index = self.rankInConfiguration [j]
+            self.halfSitting [index] = v
 
-    ## Open hand
+    ## Open or close hand
     #
-    #  \param q configuration,
-    #  \param which which hand to open, should be "left" or "right".
-    #  \return configuration with hand degrees of freedom modified
-    def openHand (self, q, which) :
+    #  \param q configuration that is modified to open the hand,
+    #  \param alpha to which extent the hand is open; 0: closed, 1: open,
+    #  \param which which hand to open, should be "left" or "right",
+    #  \return dictionary with joint names as keys and dof as value.
+    def openHand (self, q, alpha, which) :
+        res = dict ()
         if which == "left":
-            h = self.openLeftHand
+            o = self.openLeftHand
+            c = self.closedLeftHand
         elif which == "right":
-            h = self.openRightHand
+            o = self.openRightHand
+            c = self.closedRightHand
         else :
             raise RuntimeError ("which should be 'left' or 'right'")
-        for j, v in h.iteritems ():
-            q [self.rankInConfiguration [j]] = v
-        return q
-
-    ## Close hand
-    #
-    #  \param q configuration,
-    #  \param which which hand to close, should be "left" or "right".
-    #  \return configuration with hand degrees of freedom modified
-    def closedHand (self, q, which) :
-        if which == "left":
-            h = self.closedLeftHand
-        elif which == "right":
-            h = self.closedRightHand
-        else :
-            raise RuntimeError ("which should be 'left' or 'right'")
-        for j, v in h.iteritems ():
-            q [self.rankInConfiguration [j]] = v
-        return q
+        for j in o.keys ():
+            q0 = c [j]; q1 = o [j]
+            v = (1-alpha) * q0 + alpha * q1
+            if q:
+                q [self.rankInConfiguration [j]] = v
+            res [j] = v
+        return res
